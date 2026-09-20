@@ -121,17 +121,6 @@ $$\Delta E_{\text{OKLab}} = \sqrt{(L_1 - L_2)^2 + (a_1 - a_2)^2 + (b_1 - b_2)^2}
 
 Where $L$ is perceived lightness, $a$ represents green/red opponent channel, and $b$ represents blue/yellow opponent channel. This ensures smooth gradients, accurate skin tones, and faithful color reproduction on Wplace pixel canvases.
 
----
-
-## 📜 Tampermonkey / Violentmonkey Exporter Userscript (v12.0)
-
-Included in this repository is the userscript for selecting pixel artwork directly on **[wplace.live](https://wplace.live)**:
-
-### Features of Exporter Userscript v12.0:
-- **Exact Map Grid Locking**: Captures Wplace's MapLibre GL map instance (`map.project` / `map.unproject`) to lock selection dots onto $2,048,000 \times 2,048,000$ Web Mercator pixel coordinates. Dots remain 100% pinned to map pixels as you zoom in, zoom out, or pan.
-- **Capture-Phase Click Handlers**: Prevents Wplace's canvas event listeners from swallowing mouse clicks (`e.stopPropagation()`).
-- **Transparent Background & Tight Auto-Trim**: Automatically converts unpainted map background pixels (`rgba(48, 54, 70)`) to `rgba(0,0,0,0)` transparency and crops output PNG tightly around painted artwork.
-- **Right-Click Cancel**: Right-clicking at any time cancels selection and restores the top-right control menu.
 
 ---
 
