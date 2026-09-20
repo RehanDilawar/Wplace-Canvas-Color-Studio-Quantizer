@@ -37,7 +37,7 @@
   - **Sierra** (Soft Error Diffusion)
   - **Burkes** (Sharp Error Diffusion)
   - **None** (Direct Nearest Color Quantization)
-- 🧪 **Interactive Eyedropper & Manual Color Remapping**: Click any pixel in your source image to pick its color and force-remap it to a specific Wplace color swatch.
+- 🧪 **Interactive Eyedropper & Wplace Color Swapping**: Automatically quantizes images to Wplace swatches upon loading, then allows you to swap any used Wplace color with another target Wplace color. Includes eyedropper canvas sampling and a one-click mapping reset.
 - ⇄ **Interactive Split Slider & Multi-View**: Compare original vs. processed images seamlessly with a drag-handle split slider, side-by-side dual view, or single view modes.
 - 🔍 **Pixel Inspection & Zoom**: Smooth mouse-wheel zooming, click-and-drag panning, 1:1 pixel grid, and Fit-to-Screen modes.
 - 📊 **Color Usage Analytics**: Live breakdown of pixel distribution per Wplace color ID, percentage share, and total pixel counts.
