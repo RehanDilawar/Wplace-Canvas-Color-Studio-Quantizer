@@ -67,12 +67,17 @@ body.dark-theme {
   gap: 12px;
 }
 
-.logo-icon {
-  font-size: 26px;
-  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(168, 85, 247, 0.2));
-  padding: 6px 10px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-color);
+.app-logo-img {
+  width: 42px;
+  height: 42px;
+  border-radius: 10px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.4));
+  transition: transform 0.2s ease;
+}
+
+.app-logo-img:hover {
+  transform: scale(1.06) rotate(-3deg);
 }
 
 .logo-text h1 {
