@@ -172,6 +172,12 @@
       row.className = 'stat-row';
       row.style.cssText = 'display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; padding: 6px 10px; border-radius: 6px; background: rgba(0,0,0,0.25); border: 1px solid var(--border-color);';
 
+      const replacementBg = replacement 
+        ? ((replacement.transparent || replacement.id === 0)
+            ? 'repeating-linear-gradient(45deg, #475569 0 4px, #1e293b 4px 8px)'
+            : replacement.hex)
+        : sourceColor.hex;
+
       row.innerHTML = `
         <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;">
           <div class="swatch" style="background: ${sourceColor.hex}"></div>
@@ -184,7 +190,7 @@
         <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
           <span style="font-size: 11px; color: var(--text-muted);">→</span>
           ${replacement ? `
-            <div class="swatch" style="background: ${replacement.hex}" title="#${replacement.id} ${replacement.name}"></div>
+            <div class="swatch" style="background: ${replacementBg}" title="#${replacement.id} ${replacement.name}"></div>
             <button class="btn btn-xs btn-primary btn-map-color" style="min-width: 60px;">
               #${replacement.id} ${replacement.name}
             </button>
@@ -220,6 +226,8 @@
 
   // --- Eyedropper Sampling ---
   async function activateEyedropper() {
+    const btnEyedropper = document.getElementById('btn-eyedropper');
+
     if (window.EyeDropper) {
       try {
         const eyeDropper = new EyeDropper();
@@ -229,33 +237,41 @@
         const g = parseInt(hex.slice(3, 5), 16);
         const b = parseInt(hex.slice(5, 7), 16);
 
-        const closest = findClosestWplaceColor(r, g, b, WPLACE_PALETTE.slice(1), true);
+        const closest = findClosestWplaceColor(r, g, b, WPLACE_PALETTE, true);
         openReplacementPickerModal(closest.id);
+        return;
       } catch (err) {
-        // User cancelled eyedropper
+        // User cancelled native EyeDropper or not available, fallback to canvas eyedropper mode
       }
-    } else {
-      alert('Click anywhere on the processed canvas to pick a Wplace color to replace.');
-      canvasWorkspace.style.cursor = 'crosshair';
+    }
 
-      function onCanvasClick(evt) {
-        const rect = canvasProcessed.getBoundingClientRect();
-        const clickX = Math.floor(((evt.clientX - rect.left) / rect.width) * canvasProcessed.width);
-        const clickY = Math.floor(((evt.clientY - rect.top) / rect.height) * canvasProcessed.height);
+    // Direct canvas eyedropper mode without any alert popup!
+    btnEyedropper.classList.add('btn-primary');
+    btnEyedropper.classList.remove('btn-secondary');
+    btnEyedropper.innerHTML = '🧪 Click pixel on canvas...';
+    canvasWorkspace.style.cursor = 'crosshair';
 
-        if (clickX >= 0 && clickX < canvasProcessed.width && clickY >= 0 && clickY < canvasProcessed.height) {
-          const pixel = ctxProcessed.getImageData(clickX, clickY, 1, 1).data;
-          canvasWorkspace.removeEventListener('click', onCanvasClick);
-          canvasWorkspace.style.cursor = 'grab';
+    function onCanvasClick(evt) {
+      const rect = canvasProcessed.getBoundingClientRect();
+      const clickX = Math.floor(((evt.clientX - rect.left) / rect.width) * canvasProcessed.width);
+      const clickY = Math.floor(((evt.clientY - rect.top) / rect.height) * canvasProcessed.height);
 
-          if (pixel[3] > 0) {
-            const closest = findClosestWplaceColor(pixel[0], pixel[1], pixel[2], WPLACE_PALETTE.slice(1), true);
-            openReplacementPickerModal(closest.id);
-          }
+      btnEyedropper.classList.remove('btn-primary');
+      btnEyedropper.classList.add('btn-secondary');
+      btnEyedropper.innerHTML = '🧪 Pick Color from Image';
+      canvasWorkspace.style.cursor = 'grab';
+
+      if (clickX >= 0 && clickX < canvasProcessed.width && clickY >= 0 && clickY < canvasProcessed.height) {
+        const pixel = ctxProcessed.getImageData(clickX, clickY, 1, 1).data;
+        if (pixel[3] < 32) {
+          openReplacementPickerModal(0);
+        } else {
+          const closest = findClosestWplaceColor(pixel[0], pixel[1], pixel[2], WPLACE_PALETTE.slice(1), true);
+          openReplacementPickerModal(closest.id);
         }
       }
-      canvasWorkspace.addEventListener('click', onCanvasClick, { once: true });
     }
+    canvasWorkspace.addEventListener('click', onCanvasClick, { once: true });
   }
 
   // --- Target Wplace Replacement Color Picker Modal ---
@@ -269,18 +285,22 @@
     const searchFilter = document.getElementById('input-replacement-search').value.toLowerCase();
     replacementGrid.innerHTML = '';
 
-    WPLACE_PALETTE.slice(1).forEach(color => {
+    WPLACE_PALETTE.forEach(color => {
       if (searchFilter && !color.name.toLowerCase().includes(searchFilter) && !color.hex.toLowerCase().includes(searchFilter) && color.id.toString() !== searchFilter) {
         return;
       }
 
       const itemEl = document.createElement('div');
       itemEl.className = 'palette-item';
+      const swatchBg = (color.transparent || color.id === 0)
+        ? 'repeating-linear-gradient(45deg, #475569 0 4px, #1e293b 4px 8px)'
+        : color.hex;
+
       itemEl.innerHTML = `
-        <div class="swatch" style="background: ${color.hex}"></div>
+        <div class="swatch" style="background: ${swatchBg}"></div>
         <div class="palette-item-text">
           <span class="palette-item-name">#${color.id} ${color.name}</span>
-          <span class="palette-item-hex">${color.hex} ${color.free ? '• Free' : ''}</span>
+          <span class="palette-item-hex">${(color.transparent || color.id === 0) ? 'Transparent' : color.hex} ${color.free ? '• Free' : ''}</span>
         </div>
       `;
 
@@ -342,9 +362,14 @@
         const colorId = rgbToIdMap.get(key);
         if (colorId !== undefined && manualReplacements.has(colorId)) {
           const target = manualReplacements.get(colorId);
-          data[i] = target.rgb[0];
-          data[i + 1] = target.rgb[1];
-          data[i + 2] = target.rgb[2];
+          if (target.id === 0 || target.transparent) {
+            data[i + 3] = 0; // Set alpha to 0 for Transparent
+          } else {
+            data[i] = target.rgb[0];
+            data[i + 1] = target.rgb[1];
+            data[i + 2] = target.rgb[2];
+            data[i + 3] = 255;
+          }
         }
       }
 
