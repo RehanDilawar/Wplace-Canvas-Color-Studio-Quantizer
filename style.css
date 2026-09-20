@@ -564,11 +564,35 @@ canvas {
 /* Split Mode Layout */
 .viewport-stage.mode-split #canvas-wrapper-original {
   position: absolute;
-  top: 0; left: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 5;
 }
 
 .viewport-stage.mode-split #canvas-wrapper-processed {
   position: relative;
+  z-index: 1;
+}
+
+.viewport-stage.mode-split #canvas-wrapper-processed .canvas-badge {
+  left: auto;
+  right: 8px;
+}
+
+.viewport-stage.mode-side {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+}
+
+.viewport-stage.mode-side #canvas-wrapper-original,
+.viewport-stage.mode-side #canvas-wrapper-processed {
+  position: relative;
+  z-index: 1;
+  width: auto;
+  height: auto;
 }
 
 .split-divider {

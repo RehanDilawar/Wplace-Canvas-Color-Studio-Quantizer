@@ -11,6 +11,7 @@
 
   // Manual Color Replacement Map: key = "r,g,b", value = WplaceColorObject
   const manualReplacements = new Map();
+  let currentTargetKey = null; // Key currently being edited in modal
 
   // Zoom & Pan State
   let zoomLevel = 1.0;
@@ -24,9 +25,6 @@
   let splitRatio = 0.5;
   let isDraggingSplit = false;
   let currentViewMode = 'split'; // 'split', 'side', 'processed', 'original'
-
-  // Eyedropper Tool
-  let isEyedropperActive = false;
 
   // DOM Elements
   const dropzone = document.getElementById('dropzone');
@@ -61,12 +59,13 @@
   const colorStatsList = document.getElementById('color-stats-list');
   const statTotalPixels = document.getElementById('stat-total-pixels');
   const statUniqueColors = document.getElementById('stat-unique-colors');
-  const inputSearchStats = document.getElementById('input-search-stats');
 
   // Modals
   const modalPalette = document.getElementById('modal-palette');
   const paletteGrid = document.getElementById('palette-grid');
   const modalExport = document.getElementById('modal-export');
+  const modalReplacement = document.getElementById('modal-select-replacement');
+  const replacementGrid = document.getElementById('replacement-palette-grid');
 
   // --- Initialization ---
   function init() {
@@ -82,7 +81,7 @@
     tempCanvas.height = 120;
     const ctx = tempCanvas.getContext('2d');
 
-    // Create vibrant gradient & pixel artwork pattern
+    // Create vibrant gradient & pixel artwork pattern with non-Wplace colors
     const grad = ctx.createLinearGradient(0, 0, 120, 120);
     grad.addColorStop(0, '#ff0055');
     grad.addColorStop(0.33, '#00e5ff');
@@ -123,8 +122,178 @@
 
     ctxOriginal.drawImage(img, 0, 0);
 
+    manualReplacements.clear();
     resetZoomAndPan();
     processAndRender();
+  }
+
+  // --- Replace Wplace Color Panel ---
+  function updateReplaceColorPanel(quantizedStats) {
+    const panel = document.getElementById('panel-color-replace');
+    const badge = document.getElementById('non-wplace-count-badge');
+    const list = document.getElementById('detected-non-wplace-list');
+    const btnReset = document.getElementById('btn-reset-mappings');
+
+    if (!originalImage || !quantizedStats) {
+      panel.classList.add('hidden');
+      return;
+    }
+
+    panel.classList.remove('hidden');
+
+    if (manualReplacements.size > 0) {
+      badge.textContent = `${manualReplacements.size} Mapped`;
+      if (btnReset) btnReset.style.display = 'inline-flex';
+    } else {
+      const uniqueCount = quantizedStats.size - (quantizedStats.has(0) ? 1 : 0);
+      badge.textContent = `${uniqueCount} Colors`;
+      if (btnReset) btnReset.style.display = 'none';
+    }
+
+    list.innerHTML = '';
+
+    // Filter out transparent (id: 0) and sort used Wplace colors by pixel count
+    const sortedColors = [...quantizedStats.entries()]
+      .filter(([colorId]) => colorId !== 0)
+      .sort((a, b) => b[1] - a[1]);
+
+    if (sortedColors.length === 0) {
+      list.innerHTML = '<span style="font-size: 11px; color: var(--text-dark); text-align: center; display: block; padding: 10px 0;">No colors detected in image.</span>';
+      return;
+    }
+
+    sortedColors.forEach(([colorId, count]) => {
+      const sourceColor = WPLACE_PALETTE.find(c => c.id === colorId);
+      if (!sourceColor) return;
+
+      const replacement = manualReplacements.get(colorId);
+
+      const row = document.createElement('div');
+      row.className = 'stat-row';
+      row.style.cssText = 'display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 6px; padding: 6px 10px; border-radius: 6px; background: rgba(0,0,0,0.25); border: 1px solid var(--border-color);';
+
+      row.innerHTML = `
+        <div style="display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0;">
+          <div class="swatch" style="background: ${sourceColor.hex}"></div>
+          <div style="display: flex; flex-direction: column; overflow: hidden;">
+            <span style="font-size: 11px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">#${sourceColor.id} ${sourceColor.name}</span>
+            <span style="font-size: 10px; color: var(--text-muted);">${count.toLocaleString()} px</span>
+          </div>
+        </div>
+        
+        <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+          <span style="font-size: 11px; color: var(--text-muted);">→</span>
+          ${replacement ? `
+            <div class="swatch" style="background: ${replacement.hex}" title="#${replacement.id} ${replacement.name}"></div>
+            <button class="btn btn-xs btn-primary btn-map-color" style="min-width: 60px;">
+              #${replacement.id} ${replacement.name}
+            </button>
+            <button class="btn btn-xs btn-ghost btn-clear-mapping" title="Clear Replacement" style="padding: 4px 6px; color: #ef4444; border-color: rgba(239,68,68,0.3);">
+              ✕
+            </button>
+          ` : `
+            <button class="btn btn-xs btn-secondary btn-map-color" style="min-width: 80px; text-align: center;">
+              Map Color
+            </button>
+          `}
+        </div>
+      `;
+
+      const mapBtn = row.querySelector('.btn-map-color');
+      if (mapBtn) {
+        mapBtn.addEventListener('click', () => {
+          openReplacementPickerModal(colorId);
+        });
+      }
+
+      const clearBtn = row.querySelector('.btn-clear-mapping');
+      if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+          manualReplacements.delete(colorId);
+          processAndRender();
+        });
+      }
+
+      list.appendChild(row);
+    });
+  }
+
+  // --- Eyedropper Sampling ---
+  async function activateEyedropper() {
+    if (window.EyeDropper) {
+      try {
+        const eyeDropper = new EyeDropper();
+        const result = await eyeDropper.open();
+        const hex = result.sRGBHex.toUpperCase();
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+
+        const closest = findClosestWplaceColor(r, g, b, WPLACE_PALETTE.slice(1), true);
+        openReplacementPickerModal(closest.id);
+      } catch (err) {
+        // User cancelled eyedropper
+      }
+    } else {
+      alert('Click anywhere on the processed canvas to pick a Wplace color to replace.');
+      canvasWorkspace.style.cursor = 'crosshair';
+
+      function onCanvasClick(evt) {
+        const rect = canvasProcessed.getBoundingClientRect();
+        const clickX = Math.floor(((evt.clientX - rect.left) / rect.width) * canvasProcessed.width);
+        const clickY = Math.floor(((evt.clientY - rect.top) / rect.height) * canvasProcessed.height);
+
+        if (clickX >= 0 && clickX < canvasProcessed.width && clickY >= 0 && clickY < canvasProcessed.height) {
+          const pixel = ctxProcessed.getImageData(clickX, clickY, 1, 1).data;
+          canvasWorkspace.removeEventListener('click', onCanvasClick);
+          canvasWorkspace.style.cursor = 'grab';
+
+          if (pixel[3] > 0) {
+            const closest = findClosestWplaceColor(pixel[0], pixel[1], pixel[2], WPLACE_PALETTE.slice(1), true);
+            openReplacementPickerModal(closest.id);
+          }
+        }
+      }
+      canvasWorkspace.addEventListener('click', onCanvasClick, { once: true });
+    }
+  }
+
+  // --- Target Wplace Replacement Color Picker Modal ---
+  function openReplacementPickerModal(sourceColorId) {
+    currentTargetKey = sourceColorId;
+    modalReplacement.classList.remove('hidden');
+    renderReplacementModalGrid();
+  }
+
+  function renderReplacementModalGrid() {
+    const searchFilter = document.getElementById('input-replacement-search').value.toLowerCase();
+    replacementGrid.innerHTML = '';
+
+    WPLACE_PALETTE.slice(1).forEach(color => {
+      if (searchFilter && !color.name.toLowerCase().includes(searchFilter) && !color.hex.toLowerCase().includes(searchFilter) && color.id.toString() !== searchFilter) {
+        return;
+      }
+
+      const itemEl = document.createElement('div');
+      itemEl.className = 'palette-item';
+      itemEl.innerHTML = `
+        <div class="swatch" style="background: ${color.hex}"></div>
+        <div class="palette-item-text">
+          <span class="palette-item-name">#${color.id} ${color.name}</span>
+          <span class="palette-item-hex">${color.hex} ${color.free ? '• Free' : ''}</span>
+        </div>
+      `;
+
+      itemEl.addEventListener('click', () => {
+        if (currentTargetKey !== null) {
+          manualReplacements.set(currentTargetKey, color);
+        }
+        modalReplacement.classList.add('hidden');
+        processAndRender();
+      });
+
+      replacementGrid.appendChild(itemEl);
+    });
   }
 
   // --- Processing Pipeline ---
@@ -134,7 +303,7 @@
     // Get active palette depending on mode
     let currentPalette = [];
     if (paletteMode === 'all') {
-      currentPalette = WPLACE_PALETTE.slice(1); // IDs 1 to 63
+      currentPalette = WPLACE_PALETTE.slice(1);
     } else if (paletteMode === 'free') {
       currentPalette = WPLACE_PALETTE.filter(c => c.free && c.id > 0);
     } else {
@@ -148,20 +317,6 @@
     // Get original image pixels
     const srcImgData = ctxOriginal.getImageData(0, 0, originalImage.width, originalImage.height);
 
-    // Apply manual replacements first if any
-    if (manualReplacements.size > 0) {
-      const data = srcImgData.data;
-      for (let i = 0; i < data.length; i += 4) {
-        const key = `${data[i]},${data[i+1]},${data[i+2]}`;
-        if (manualReplacements.has(key)) {
-          const rep = manualReplacements.get(key);
-          data[i] = rep.rgb[0];
-          data[i+1] = rep.rgb[1];
-          data[i+2] = rep.rgb[2];
-        }
-      }
-    }
-
     const algorithm = selectDither.value;
     const ditherStrength = parseFloat(rangeDitherAmount.value) / 100;
     const useOKLab = selectColorSpace.value === 'oklab';
@@ -170,8 +325,49 @@
     // Run Dithering engine
     const result = processImageDither(srcImgData, currentPalette, algorithm, ditherStrength, alphaCutoff, useOKLab);
 
+    // Keep copy of original quantized stats for Section 4 UI list
+    const originalQuantizedStats = new Map(result.stats);
+
+    // Apply manual Wplace-to-Wplace color replacements if any exist
+    if (manualReplacements.size > 0) {
+      const data = result.imageData.data;
+
+      // Fast RGB to Wplace color ID map
+      const rgbToIdMap = new Map();
+      WPLACE_PALETTE.forEach(c => rgbToIdMap.set(`${c.rgb[0]},${c.rgb[1]},${c.rgb[2]}`, c.id));
+
+      for (let i = 0; i < data.length; i += 4) {
+        if (data[i + 3] < alphaCutoff) continue;
+        const key = `${data[i]},${data[i + 1]},${data[i + 2]}`;
+        const colorId = rgbToIdMap.get(key);
+        if (colorId !== undefined && manualReplacements.has(colorId)) {
+          const target = manualReplacements.get(colorId);
+          data[i] = target.rgb[0];
+          data[i + 1] = target.rgb[1];
+          data[i + 2] = target.rgb[2];
+        }
+      }
+
+      // Re-calculate stats breakdown for right sidebar
+      const updatedStats = new Map();
+      result.stats.forEach((count, colorId) => {
+        if (colorId === 0) {
+          updatedStats.set(0, count);
+        } else if (manualReplacements.has(colorId)) {
+          const targetId = manualReplacements.get(colorId).id;
+          updatedStats.set(targetId, (updatedStats.get(targetId) || 0) + count);
+        } else {
+          updatedStats.set(colorId, (updatedStats.get(colorId) || 0) + count);
+        }
+      });
+      result.stats = updatedStats;
+    }
+
     // Put image data on processed canvas
     ctxProcessed.putImageData(result.imageData, 0, 0);
+
+    // Update Section 4 Replace Wplace Colors panel
+    updateReplaceColorPanel(originalQuantizedStats);
 
     // Update color statistics
     renderColorStats(result.stats, originalImage.width * originalImage.height);
@@ -208,9 +404,6 @@
   // --- Split View Slider & Modes ---
   function updateSplitClip() {
     if (!originalImage) return;
-
-    const w = originalImage.width;
-    const h = originalImage.height;
 
     if (currentViewMode === 'split') {
       wrapperOriginal.style.clipPath = `polygon(0 0, ${splitRatio * 100}% 0, ${splitRatio * 100}% 100%, 0 100%)`;
@@ -254,7 +447,6 @@
     panX = 0;
     panY = 0;
 
-    // Fit to container if image is large
     const rect = canvasWorkspace.getBoundingClientRect();
     const scaleX = (rect.width - 60) / originalImage.width;
     const scaleY = (rect.height - 60) / originalImage.height;
@@ -305,7 +497,6 @@
 
   // --- Event Listeners ---
   function setupEventListeners() {
-    // 1. File Upload
     fileInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (file) {
@@ -344,7 +535,23 @@
 
     document.getElementById('btn-demo').addEventListener('click', loadDemoImage);
 
-    // 2. Palette Mode Selection
+    // Eyedropper & Reset Buttons
+    document.getElementById('btn-eyedropper').addEventListener('click', activateEyedropper);
+    const btnResetMappings = document.getElementById('btn-reset-mappings');
+    if (btnResetMappings) {
+      btnResetMappings.addEventListener('click', () => {
+        manualReplacements.clear();
+        processAndRender();
+      });
+    }
+
+    // Target Replacement Modal Close & Search
+    document.getElementById('btn-close-replacement-modal').addEventListener('click', () => {
+      modalReplacement.classList.add('hidden');
+    });
+    document.getElementById('input-replacement-search').addEventListener('input', renderReplacementModalGrid);
+
+    // Palette Mode Selection
     radioPaletteModes.forEach(radio => {
       radio.addEventListener('change', (e) => {
         paletteMode = e.target.value;
@@ -372,7 +579,7 @@
       processAndRender();
     });
 
-    // 3. Dithering & Range Controls
+    // Dithering & Range Controls
     selectDither.addEventListener('change', processAndRender);
     rangeDitherAmount.addEventListener('input', (e) => {
       valDitherAmount.textContent = `${e.target.value}%`;
@@ -384,7 +591,7 @@
       processAndRender();
     });
 
-    // 4. View Modes & Toolbar Buttons
+    // View Modes & Toolbar Buttons
     document.getElementById('view-split').addEventListener('click', () => setViewMode('split'));
     document.getElementById('view-side').addEventListener('click', () => setViewMode('side'));
     document.getElementById('view-processed').addEventListener('click', () => setViewMode('processed'));
@@ -445,7 +652,7 @@
       isDraggingSplit = true;
     });
 
-    // 5. Palette Modal Controls
+    // Palette Modal Controls
     document.getElementById('btn-toggle-palette-modal').addEventListener('click', () => {
       modalPalette.classList.remove('hidden');
     });
@@ -481,7 +688,7 @@
       updateCustomBadge();
     });
 
-    // 6. Export Modal & Download
+    // Export Modal & Download
     document.getElementById('btn-export').addEventListener('click', () => {
       modalExport.classList.remove('hidden');
     });
