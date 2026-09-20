@@ -73,41 +73,72 @@ Wplace uses an official 64-color palette. The palette is divided into **Free Bas
 <details>
 <summary><b>Click to Expand Full Wplace 64 Palette Table</b></summary>
 
-| ID | Color Name | Hex Code | RGB | OKLab (L, a, b) | Tier |
-|---|---|---|---|---|---|
-| **0** | Transparent | `transparent` | (0, 0, 0) | (0, 0, 0) | Free |
-| **1** | Black | `#000000` | (0, 0, 0) | (0, 0, 0) | Free |
-| **2** | Dark Gray | `#3C3C3C` | (60, 60, 60) | (0.356, 0, 0) | Free |
-| **3** | Gray | `#787878` | (120, 120, 120) | (0.573, 0, 0) | Free |
-| **4** | Light Gray | `#D2D2D2` | (210, 210, 210) | (0.864, 0, 0) | Free |
-| **5** | White | `#FFFFFF` | (255, 255, 255) | (1, 0, 0) | Free |
-| **6** | Deep Red | `#600008` | (96, 0, 8) | (0.31, 0.119, 0.037) | Free |
-| **7** | Red | `#ED1C24` | (237, 28, 36) | (0.603, 0.209, 0.107) | Free |
-| **8** | Orange Red | `#FF7F27` | (255, 127, 39) | (0.732, 0.118, 0.137) | Free |
-| **9** | Peach | `#F6B26B` | (246, 178, 107) | (0.791, 0.039, 0.16) | Free |
-| **10** | Yellow | `#F9E53B` | (249, 229, 59) | (0.895, -0.026, 0.168) | Free |
-| **11** | Light Yellow | `#FFFCCB` | (255, 252, 203) | (0.974, -0.019, 0.077) | Free |
-| **12** | Dark Green | `#0EB168` | (14, 177, 104) | (0.691, -0.154, 0.075) | Free |
-| **13** | Green | `#13E67B` | (19, 230, 123) | (0.812, -0.185, 0.096) | Free |
-| **14** | Light Green | `#87FE9E` | (135, 254, 158) | (0.898, -0.17, 0.149) | Free |
-| **15** | Teal | `#0C816E` | (12, 129, 110) | (0.541, -0.097, 0.005) | Free |
-| **16** | Cyan Teal | `#10AEA6` | (16, 174, 166) | (0.678, -0.114, -0.018) | Free |
-| **17** | Light Cyan | `#13E1BE` | (19, 225, 190) | (0.814, -0.15, 0.011) | Free |
-| **18** | Dark Blue | `#28509E` | (40, 80, 158) | (0.447, -0.019, -0.134) | Free |
-| **19** | Blue | `#4093EC` | (64, 147, 236) | (0.65, -0.048, -0.137) | Free |
-| **20** | Light Blue | `#60F7F2` | (96, 247, 242) | (0.895, -0.124, -0.027) | Free |
-| **21** | Indigo | `#6B50F6` | (107, 80, 246) | (0.561, 0.054, -0.229) | Free |
-| **22** | Periwinkle | `#99B1FB` | (153, 177, 251) | (0.771, 0, -0.11) | Free |
-| **23** | Deep Purple | `#780C99` | (120, 12, 153) | (0.431, 0.145, -0.143) | Free |
-| **24** | Purple | `#AA38B9` | (170, 56, 185) | (0.557, 0.168, -0.127) | Free |
-| **25** | Light Purple | `#E0AFFE` | (224, 175, 254) | (0.796, 0.102, -0.097) | Free |
-| **26** | Magenta | `#CB007A` | (203, 0, 122) | (0.551, 0.225, -0.023) | Free |
-| **27** | Hot Pink | `#EC1F80` | (236, 31, 128) | (0.62, 0.238, 0) | Free |
-| **28** | Pink | `#F38DA9` | (243, 141, 169) | (0.759, 0.127, 0.006) | Free |
-| **29** | Dark Brown | `#684634` | (104, 70, 52) | (0.428, 0.036, 0.041) | Free |
-| **30** | Brown | `#95682A` | (149, 104, 42) | (0.552, 0.03, 0.092) | Free |
-| **31** | Beige | `#F8B277` | (248, 178, 119) | (0.817, 0.055, 0.097) | Free |
-| **32–63** | Premium Droplet Palette | Swatches `#AAA6AA` to `#CDA4BE` | Various | Various | Premium |
+| ID | Color Name | Hex Code | RGB | Tier |
+|---|---|---|---|---|
+| **0** | Transparent | `transparent` | (0, 0, 0) | Free |
+| **1** | Black | `#000000` | (0, 0, 0) | Free |
+| **2** | Dark Gray | `#3C3C3C` | (60, 60, 60) | Free |
+| **3** | Gray | `#787878` | (120, 120, 120) | Free |
+| **4** | Light Gray | `#D2D2D2` | (210, 210, 210) | Free |
+| **5** | White | `#FFFFFF` | (255, 255, 255) | Free |
+| **6** | Deep Red | `#600018` | (96, 0, 24) | Free |
+| **7** | Red | `#ED1C24` | (237, 28, 36) | Free |
+| **8** | Orange | `#FF7F27` | (255, 127, 39) | Free |
+| **9** | Gold | `#F6AA09` | (246, 170, 9) | Free |
+| **10** | Yellow | `#F9DD3B` | (249, 221, 59) | Free |
+| **11** | Light Yellow | `#FFFABC` | (255, 250, 188) | Free |
+| **12** | Dark Green | `#0EB968` | (14, 185, 104) | Free |
+| **13** | Green | `#13E67B` | (19, 230, 123) | Free |
+| **14** | Light Green | `#87FF5E` | (135, 255, 94) | Free |
+| **15** | Dark Teal | `#0C816E` | (12, 129, 110) | Free |
+| **16** | Teal | `#10AEA6` | (16, 174, 166) | Free |
+| **17** | Light Teal | `#13E1BE` | (19, 225, 190) | Free |
+| **18** | Dark Blue | `#28509E` | (40, 80, 158) | Free |
+| **19** | Blue | `#4093E4` | (64, 147, 228) | Free |
+| **20** | Cyan | `#60F7F2` | (96, 247, 242) | Free |
+| **21** | Indigo | `#6B50F6` | (107, 80, 246) | Free |
+| **22** | Light Indigo | `#99B1FB` | (153, 177, 251) | Free |
+| **23** | Dark Purple | `#780C99` | (120, 12, 153) | Free |
+| **24** | Purple | `#AA38B9` | (170, 56, 185) | Free |
+| **25** | Light Purple | `#E09FF9` | (224, 159, 249) | Free |
+| **26** | Dark Pink | `#CB007A` | (203, 0, 122) | Free |
+| **27** | Pink | `#EC1F80` | (236, 31, 128) | Free |
+| **28** | Light Pink | `#F38DA9` | (243, 141, 169) | Free |
+| **29** | Dark Brown | `#684634` | (104, 70, 52) | Free |
+| **30** | Brown | `#95682A` | (149, 104, 42) | Free |
+| **31** | Beige | `#F8B277` | (248, 178, 119) | Free |
+| **32** | Medium Gray | `#AAAAAA` | (170, 170, 170) | Premium |
+| **33** | Dark Red | `#A50E1E` | (165, 14, 30) | Premium |
+| **34** | Light Red | `#FA8072` | (250, 128, 114) | Premium |
+| **35** | Dark Orange | `#E45C1A` | (228, 92, 26) | Premium |
+| **36** | Light Tan | `#D6B594` | (214, 181, 148) | Premium |
+| **37** | Dark Goldenrod | `#9C8431` | (156, 132, 49) | Premium |
+| **38** | Goldenrod | `#C5AD31` | (197, 173, 49) | Premium |
+| **39** | Light Goldenrod | `#E8D45F` | (232, 212, 95) | Premium |
+| **40** | Dark Olive | `#4A6B3A` | (74, 107, 58) | Premium |
+| **41** | Olive | `#5A944A` | (90, 148, 74) | Premium |
+| **42** | Light Olive | `#84C573` | (132, 197, 115) | Premium |
+| **43** | Dark Cyan | `#0F799F` | (15, 121, 159) | Premium |
+| **44** | Light Cyan | `#BBFAF2` | (187, 250, 242) | Premium |
+| **45** | Light Blue | `#7DC7FF` | (125, 199, 255) | Premium |
+| **46** | Dark Indigo | `#4D31B8` | (77, 49, 184) | Premium |
+| **47** | Dark Slate Blue | `#4A4284` | (74, 66, 132) | Premium |
+| **48** | Slate Blue | `#7A71C4` | (122, 113, 196) | Premium |
+| **49** | Light Slate Blue | `#B5AEF1` | (181, 174, 241) | Premium |
+| **50** | Light Brown | `#DBA463` | (219, 164, 99) | Premium |
+| **51** | Dark Beige | `#D18051` | (209, 128, 81) | Premium |
+| **52** | Light Beige | `#FFC5A5` | (255, 197, 165) | Premium |
+| **53** | Dark Peach | `#9B5249` | (155, 82, 73) | Premium |
+| **54** | Peach | `#D18078` | (209, 128, 120) | Premium |
+| **55** | Light Peach | `#FAB6A4` | (250, 182, 164) | Premium |
+| **56** | Dark Tan | `#7B6352` | (123, 99, 82) | Premium |
+| **57** | Tan | `#9C846B` | (156, 132, 107) | Premium |
+| **58** | Dark Slate | `#333941` | (51, 57, 65) | Premium |
+| **59** | Slate | `#6D758D` | (109, 117, 141) | Premium |
+| **60** | Light Slate | `#B3B9D1` | (179, 185, 209) | Premium |
+| **61** | Dark Stone | `#6D643F` | (109, 100, 63) | Premium |
+| **62** | Stone | `#948C6B` | (148, 140, 107) | Premium |
+| **63** | Light Stone | `#CDC59E` | (205, 197, 158) | Premium |
 
 </details>
 
