@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="favicon.ico" width="128" height="128" alt="Wplace Color Studio Logo" />
+  <img src="icon.svg" width="128" height="128" alt="Wplace Color Studio Logo" />
 </p>
 
 <h1 align="center">Wplace Canvas Color Studio & Quantizer</h1>
